@@ -2,6 +2,8 @@ use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Error, ErrorKind, Result};
 
+use ouey::mac::normalize_mac_str;
+
 struct OuiRecord {
     mac_str: String,
     vendor: String,
@@ -29,7 +31,9 @@ fn main() -> Result<()> {
     // let db_path = "20-OUI.hwdb";
     let mut db_file = File::open(db_path)?;
     // db_file.read_to_string(&mut contents)?;
-    println!("{}", parse_db_file(&mut db_file).unwrap());
+    let db = parse_db_file(&mut db_file).unwrap();
+    println!("{}", db);
+    println!("Example DB record: {}", db.records.get(10).unwrap());
     Ok(())
 }
 
@@ -89,8 +93,8 @@ fn read_record(reader: &mut BufReader<&File>) -> Result<OuiRecord> {
 
 fn parse_mac_line(line: &String, r: &mut OuiRecord) {
     let chars = line.chars();
-    let mac_prefix = chars.skip(4).take_while(|c| *c != '*').collect();
-    r.mac_str = mac_prefix;
+    let mac_prefix: String = chars.skip(4).take_while(|c| *c != '*').collect();
+    r.mac_str = normalize_mac_str(&mac_prefix);
 }
 
 fn parse_vendor_line(line: &String, r: &mut OuiRecord) {
