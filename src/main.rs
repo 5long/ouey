@@ -1,4 +1,5 @@
 use std::fmt;
+use std::env::args;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Error, ErrorKind, Result};
 
@@ -32,8 +33,16 @@ fn main() -> Result<()> {
     let mut db_file = File::open(db_path)?;
     // db_file.read_to_string(&mut contents)?;
     let db = parse_db_file(&mut db_file).unwrap();
-    println!("{}", db);
-    println!("Example DB record: {}", db.records.get(10).unwrap());
+
+    let first_arg = args().nth(1).unwrap();
+    let input_mac = normalize_mac_str(&first_arg);
+
+    for r in &db.records {
+        if input_mac.starts_with(&r.mac_str) {
+            println!("{}\t{}", input_mac, r.vendor);
+        }
+    }
+
     Ok(())
 }
 
